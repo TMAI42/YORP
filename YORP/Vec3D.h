@@ -9,17 +9,16 @@ enum class Vertices
 };
 
 
-class Vec3D
-{
+class Vec3D {
 public:
 	Vec3D(double x, double y, double z);
 	~Vec3D() = default;
 	
-	static Vec3D VectorProduct(Vec3D a, Vec3D b);
+	static Vec3D VectorProduct(const Vec3D& a, const Vec3D& b);
 
-	double operator* (Vec3D b) const ;
-	Vec3D operator+ (Vec3D b);
-	Vec3D operator- (Vec3D b);
+	double operator* (const Vec3D& b) const ;
+	Vec3D operator+ (const Vec3D& b);
+	Vec3D operator- (const Vec3D& b);
 	Vec3D operator/ (double denum);
 
 	const double operator[](Vertices vertex) const;

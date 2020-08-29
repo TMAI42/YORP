@@ -24,7 +24,7 @@ private:
 
 	int numberOfVrtices, numberOfFacets;
 
-	double maxRadius;
+	double averRadius;
 
 	std::vector<Vec3D> vertices;
 	std::vector<std::tuple<int, int, int>> indexes;

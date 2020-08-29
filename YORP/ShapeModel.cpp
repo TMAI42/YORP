@@ -1,7 +1,7 @@
 #include "ShapeModel.h"
 
-ShapeModel::ShapeModel(std::string pathName)
-{
+ShapeModel::ShapeModel(std::string pathName) {
+
 	std::ifstream file(pathName);
 
 	if (!file.is_open()) {
@@ -18,7 +18,7 @@ ShapeModel::ShapeModel(std::string pathName)
 
 			file >> x >> y >> z;
 
-			vertices.push_back({ x*1000, y*1000, z*1000 });
+			vertices.push_back({ x * 1000, y * 1000, z * 1000 });
 		}
 
 		double volume = 0;
@@ -37,7 +37,7 @@ ShapeModel::ShapeModel(std::string pathName)
 			volume += (pairsVecSurfase[j].first * pairsVecSurfase[j].second) / 2;
 		}
 		//aver
-		maxRadius = pow(3. * volume / 4. / PI, 1. / 3.);
+		averRadius = pow(3. * volume / 4. / PI, 1. / 3.);
 	}
 
 	file.close();
@@ -65,7 +65,7 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 			sqrt(surf.first[Vertices::X] * surf.first[Vertices::X] +
 				surf.first[Vertices::Y] * surf.first[Vertices::Y]) /
 			sqrt(surf.second[Vertices::X] * surf.second[Vertices::X] +
-			surf.second[Vertices::Y] * surf.second[Vertices::Y] + 0.0000000001);
+				surf.second[Vertices::Y] * surf.second[Vertices::Y] + 0.0000000001);
 
 		p_z = 0.;
 		p_sin = 0.;
@@ -77,7 +77,7 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 			double phhi = -(PI / 2) + PI * (2. * j - 1.) / 2. / Nintegral;
 			p_z += (PI / Nintegral) * sqrt(1 - (sin(phhi) * cospsi * sin(epsilon) -
 				sinpsi * cos(epsilon)) * (sin(phhi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
-			p_sin += (PI / Nintegral) * sin(phhi) * sqrt(1 - (sin(phhi) * cospsi * sin(epsilon) - 
+			p_sin += (PI / Nintegral) * sin(phhi) * sqrt(1 - (sin(phhi) * cospsi * sin(epsilon) -
 				sinpsi * cos(epsilon)) * (sin(phhi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
 		}
 
@@ -88,7 +88,7 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 		tauZTemp += (Vec3D::VectorProduct(surf.second, surf.first)[Vertices::Z]) * p_z; // YORP torque axial component
 
 		tauEpsilonTemp += -sqrt(surf.first.GetLength()) * sqrt(surf.second.GetLength()) * sinpsi * cosetha * sindelta * p_sin;// YORP torque obliquity component
-	
+
 	}
 
 	tauZ.insert({ epsilon, tauZTemp });
@@ -97,12 +97,10 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 	return { tauZTemp, tauEpsilonTemp };
 }
 
-std::map<double, double> ShapeModel::GetCalculatedTauZ()
-{
+std::map<double, double> ShapeModel::GetCalculatedTauZ() {
 	return tauZ;
 }
 
-std::map<double, double> ShapeModel::GetCalculatedTauEpsilon()
-{
+std::map<double, double> ShapeModel::GetCalculatedTauEpsilon() {
 	return tauEpsilon;
 }
