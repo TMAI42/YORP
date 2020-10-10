@@ -18,7 +18,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 
 			file >> x >> y >> z;
 
-			vertices.push_back({ x * 1000, y * 1000, z * 1000 });
+			this->vertices.push_back({ x * 1000, y * 1000, z * 1000 });
 		}
 
 		double volume = 0;
@@ -26,21 +26,21 @@ ShapeModel::ShapeModel(std::string pathName) {
 		for (int j = 0; j < this->numberOfFacets; j++) {
 			int a, b, c;
 
-			for (int i = 0; i < 3; i++)
-				file >> a >> b >> c;
+			file >> a >> b >> c;
 
-			indexes.push_back({ a, b, c });
+			this->indexes.push_back({ a, b, c });
+			
+			this->pairsVecSurfase.push_back({ (this->vertices[a] + this->vertices[b] + this->vertices[c]) / 3,
+				Vec3D::VectorProduct(this->vertices[b] - this->vertices[a], this->vertices[c] - this->vertices[a]) / 2 });
 
-			pairsVecSurfase.push_back({ (vertices[a] + vertices[b] + vertices[c]) / 3,
-				Vec3D::VectorProduct(vertices[b] - vertices[a], vertices[c] - vertices[a]) / 2 });
-
-			volume += (pairsVecSurfase[j].first * pairsVecSurfase[j].second) / 2;
+			volume += (this->pairsVecSurfase[j].first * this->pairsVecSurfase[j].second) / 2;
 		}
-		//aver
-		averRadius = pow(3. * volume / 4. / PI, 1. / 3.);
+
+		this->averageRadius = pow(3. * volume / 4. / PI, 1. / 3.);
 	}
 
 	file.close();
+	
 }
 
 std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
@@ -53,54 +53,55 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 	double tauZTemp = 0.;
 	double tauEpsilonTemp = 0.;
 
-	for (const auto& surf : pairsVecSurfase) {
+	for (const auto&[vecorToSurface, surfaceVector] : this->pairsVecSurfase) {
 
-		sinpsi = surf.second[Vertices::Z] / sqrt(surf.second.GetLength() + 0.0000000001);
+		sinpsi = surfaceVector[Vertices::Z] / sqrt(surfaceVector.GetLength() + 0.0000000001);
 		//+0 needed because some asteroids presumably have facets of 0 area
 		cospsi = sqrt(1 - sinpsi * sinpsi);
-		sinetha = surf.first[Vertices::Z] / sqrt(surf.first.GetLength());
+		sinetha = vecorToSurface[Vertices::Z] / sqrt(vecorToSurface.GetLength());
 		cosetha = sqrt(1 - sinetha * sinetha);
 		//ask for this
-		sindelta = Vec3D::VectorProduct(surf.second, surf.first)[Vertices::Z] /
-			sqrt(surf.first[Vertices::X] * surf.first[Vertices::X] +
-				surf.first[Vertices::Y] * surf.first[Vertices::Y]) /
-			sqrt(surf.second[Vertices::X] * surf.second[Vertices::X] +
-				surf.second[Vertices::Y] * surf.second[Vertices::Y] + 0.0000000001);
+		sindelta = Vec3D::VectorProduct(surfaceVector, vecorToSurface)[Vertices::Z] /
+			sqrt(vecorToSurface[Vertices::X] * vecorToSurface[Vertices::X] +
+				vecorToSurface[Vertices::Y] * vecorToSurface[Vertices::Y]) /
+			sqrt(surfaceVector[Vertices::X] * surfaceVector[Vertices::X] +
+				surfaceVector[Vertices::Y] * surfaceVector[Vertices::Y] + 0.0000000001);
 
 		p_z = 0.;
 		p_sin = 0.;
-		//add sin cos 
-		//phhi-> phi
+		//TODO: add sin cos 
+		
 
-		for (long int j = 1; j <= Nintegral; j++)
-		{
-			double phhi = -(PI / 2) + PI * (2. * j - 1.) / 2. / Nintegral;
-			p_z += (PI / Nintegral) * sqrt(1 - (sin(phhi) * cospsi * sin(epsilon) -
-				sinpsi * cos(epsilon)) * (sin(phhi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
-			p_sin += (PI / Nintegral) * sin(phhi) * sqrt(1 - (sin(phhi) * cospsi * sin(epsilon) -
-				sinpsi * cos(epsilon)) * (sin(phhi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
+		for (long int j = 1; j <= Nintegral; j++) {
+			double phi = -(PI / 2) + PI * (2. * j - 1.) / 2. / Nintegral;
+			p_z += (PI / Nintegral) * sqrt(1 - (sin(phi) * cospsi * sin(epsilon) -
+				sinpsi * cos(epsilon)) * (sin(phi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
+			p_sin += (PI / Nintegral) * sin(phi) * sqrt(1 - (sin(phi) * cospsi * sin(epsilon) -
+				sinpsi * cos(epsilon)) * (sin(phi) * cospsi * sin(epsilon) - sinpsi * cos(epsilon)));
 		}
 
 		p_z = 2. / 3. / PI / PI * p_z;
 		p_sin = 2. / 3. / PI / PI * p_sin;
 
 		//computing axial and obliquity components of YORP
-		tauZTemp += (Vec3D::VectorProduct(surf.second, surf.first)[Vertices::Z]) * p_z; // YORP torque axial component
+		// YORP torque axial component
+		tauZTemp += (Vec3D::VectorProduct(surfaceVector, vecorToSurface)[Vertices::Z]) * p_z;
 
-		tauEpsilonTemp += -sqrt(surf.first.GetLength()) * sqrt(surf.second.GetLength()) * sinpsi * cosetha * sindelta * p_sin;// YORP torque obliquity component
+		// YORP torque obliquity component
+		tauEpsilonTemp += -sqrt(vecorToSurface.GetLength()) * sqrt(surfaceVector.GetLength()) * sinpsi * cosetha * sindelta * p_sin;
 
 	}
 
-	tauZ.insert({ epsilon, tauZTemp });
-	tauEpsilon.insert({ epsilon, tauEpsilonTemp });
+	this->tauZ.insert({ epsilon, tauZTemp });
+	this->tauEpsilon.insert({ epsilon, tauEpsilonTemp });
 
 	return { tauZTemp, tauEpsilonTemp };
 }
 
 std::map<double, double> ShapeModel::GetCalculatedTauZ() {
-	return tauZ;
+	return this->tauZ;
 }
 
 std::map<double, double> ShapeModel::GetCalculatedTauEpsilon() {
-	return tauEpsilon;
+	return this->tauEpsilon;
 }

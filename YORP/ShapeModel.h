@@ -7,8 +7,7 @@
 #include <map>
 #include <string>
 
-class ShapeModel
-{
+class ShapeModel {
 public:
 	ShapeModel(std::string pathName);
 	~ShapeModel() = default;
@@ -24,7 +23,7 @@ private:
 
 	int numberOfVrtices, numberOfFacets;
 
-	double averRadius;
+	double averageRadius;
 
 	std::vector<Vec3D> vertices;
 	std::vector<std::tuple<int, int, int>> indexes;
