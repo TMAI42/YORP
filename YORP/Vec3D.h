@@ -20,6 +20,7 @@ public:
 	Vec3D operator+ (const Vec3D& b);
 	Vec3D operator- (const Vec3D& b);
 	Vec3D operator/ (double denum);
+	Vec3D operator* (double a);
 
 	const double operator[](Vertices vertex) const;
 	double operator[](Vertices vertex);

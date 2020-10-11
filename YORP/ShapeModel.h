@@ -8,6 +8,8 @@
 #include <string>
 
 class ShapeModel {
+	friend class Tracer;
+
 public:
 	ShapeModel(std::string pathName);
 	~ShapeModel() = default;
@@ -29,7 +31,6 @@ private:
 	std::vector<std::tuple<int, int, int>> indexes;
 
 	std::vector<std::pair<Vec3D, Vec3D>> pairsVecSurfase;
-	//каждая последующая калькуляция будет медленнее
 	std::map<double, double> tauZ, tauEpsilon;
 
 };

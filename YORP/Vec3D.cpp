@@ -24,6 +24,11 @@ Vec3D Vec3D::operator/(double denum) {
 	return { X / denum, Y / denum, Z / denum };;
 }
 
+Vec3D Vec3D::operator*(double a)
+{
+	return {a*X, a*Y, a*Z};
+}
+
 const double Vec3D::operator[](Vertices vertex) const {
 	switch (vertex) {
 	case Vertices::X:
