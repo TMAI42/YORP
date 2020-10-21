@@ -49,7 +49,7 @@ RayEmitter<numberOfRays>::RayEmitter(double radius, double phi, double teta, dou
 		double sinTeta = sin(teta);
 		double sinEpsilon = sin(epsilon);
 
-		RoatrionMatrix = {
+		roatrionMatrix = {
 			{cosPhi * cosTeta - cosEpsilon * sinPhi * sinTeta, -cosTeta * sinPhi - cosPhi * cosEpsilon * sinTeta, sinEpsilon * sinTeta},
 			{cosEpsilon * cosTeta * sinPhi + cosPhi * sinTeta, cosPhi * cosEpsilon * cosTeta - sinPhi * sinTeta, -cosTeta * sinEpsilon},
 			{sinPhi * sinEpsilon, cosPhi * sinEpsilon, cosEpsilon}

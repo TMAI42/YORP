@@ -8,6 +8,7 @@
 #include <string>
 
 class ShapeModel {
+	template<size_t numberOfRays, size_t integralSteps>
 	friend class Tracer;
 
 public:
