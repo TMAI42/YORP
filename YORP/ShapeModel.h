@@ -19,8 +19,9 @@ public:
 
 	std::map<double, double> GetCalculatedTauZ();
 	std::map<double, double> GetCalculatedTauEpsilon();
-	
+
 private:
+	double maxRadius{ 0. };
 
 	const double PI = 3.141592653589793238;
 

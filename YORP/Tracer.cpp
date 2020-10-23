@@ -1,4 +1,5 @@
 #include "Tracer.h"
+#include <ctime>
 
 template<size_t numberOfRays, size_t integralSteps>
 void Tracer<numberOfRays, integralSteps>::Trace(ShapeModel& object,double epsilon) {
@@ -20,14 +21,13 @@ void Tracer<numberOfRays, integralSteps>::Trace(ShapeModel& object,double epsilo
 		}
 	}
 
-	torqe *= (3.14159265359265 * Rmax * Rmax) / (averageRadius * averageRadius * averageRadius);
-
-	
+	torqe = torqe*(3.14159265359265 * object.maxRadius * object.maxRadius) / (object.averageRadius * object.averageRadius * object.averageRadius) ;
+	object.tauZ.insert({ epsilon, torqe[Vertices::Z] });
 }
 
 template<size_t numberOfRays, size_t integralSteps>
 inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, ShapeModel& object, Vec3D& torqe) {
-	for (int i = 0; i < object.numberOfFacets, ++i) {
+	for (int i = 0; i < object.numberOfFacets; ++i) {
 		if (object.pairsVecSurfase[i].second * current.direction > 0)
 			return false;
 
@@ -39,21 +39,22 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 		/*intersection point */
 		double u, v, t;
 
-		u = Vec3D::VectorProduct(current.direction, current.startPoint - object.vertices[std::get<0>(object.indexes[i]]];
+		u = Vec3D::VectorProduct(current.direction, current.startPoint - object.vertices[std::get<0>(object.indexes[i])]);
 		if (u < 0.0 || u > det)
 			return false;
 
-		v = current.direction * Vec3D::VectorProduct(current.startPoint - object.vertices[std::get<0>(object.indexes[i]]);
+		v = current.direction * Vec3D::VectorProduct(current.startPoint - object.vertices[std::get<0>(object.indexes[i])]);
 		if (v < 0.0 || u + v > det)
 			return false;
 
-		t = secondVectorOfSurf * Vec3D::VectorProduct(current.startPoint - object.vertices[std::get<0>(object.indexes[i]]);
+		t = secondVectorOfSurf * Vec3D::VectorProduct(current.startPoint - object.vertices[std::get<0>(object.indexes[i])]);
 
 		u *= (1 / det);
 		v *= (1 / det);
 		t *= (1 / det);
 
-		ReflectLambert({ u, v, t }, current, torqe);
+		ReflectLambert({ u, v, t }, current, torqe,
+			object.pairsVecSurfase[i].second/ object.pairsVecSurfase[i].second.GetLength(), firstVectorOfSurf/firstVectorOfSurf.GetLength());
 		return true;
 
 	}
@@ -70,7 +71,7 @@ inline void Tracer<numberOfRays, integralSteps>::ReflectLambert(const Vec3D& int
 
 	reflectingRay.startPoint = intersectionPoint;
 
-	std::srand(std::time(NULL));
+	std::srand(time(nullptr));
 	double randomVariable1 = std::rand() % 100/100.;
 	double randomVariable2 = std::rand() % 100/100.;
 
@@ -96,8 +97,20 @@ inline void Tracer<numberOfRays, integralSteps>::ReflectLambert(const Vec3D& int
 	Y` - vector product of normilized vector of reflection surface and normilize vector in reflectin surface 
 	Z` - normilized vector of reflection surface 
 	*/
-	double transformaionMatrix[3][3] = { {},{},{} }
+	Vec3D newEY = Vec3D::VectorProduct(surfaceNormal, vectorInSurf);
+	double transformaionMatrix[3][3] =
+	{ {vectorInSurf[Vertices::X], newEY[Vertices::X], surfaceNormal[Vertices::X]},
+		{vectorInSurf[Vertices::Y], newEY[Vertices::Y], surfaceNormal[Vertices::Y]},
+		{vectorInSurf[Vertices::Z], newEY[Vertices::Z], surfaceNormal[Vertices::Z]} };
 
-	torqe += Vec3D::VectorProduct(intersectionPoint, momentum);
+	reflectingRay = { 
+		transformaionMatrix[0][0]*nonRotetedX + transformaionMatrix[0][1]*nonRotetedY+transformaionMatrix[0][2]*nonRotetedZ,
+	    transformaionMatrix[1][0] * nonRotetedX + transformaionMatrix[1][1] * nonRotetedY + transformaionMatrix[1][2] * nonRotetedZ,
+	    transformaionMatrix[2][0] * nonRotetedX + transformaionMatrix[2][1] * nonRotetedY + transformaionMatrix[2][2] * nonRotetedZ
+	};
+
+	momentum = momentum - reflectingRay.direction;
+
+	torqe = torqe + Vec3D::VectorProduct(intersectionPoint, momentum);
 }
 

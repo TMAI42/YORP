@@ -1,7 +1,7 @@
 #include "ShapeModel.h"
 
 ShapeModel::ShapeModel(std::string pathName) {
-
+	
 	std::ifstream file(pathName);
 
 	if (!file.is_open()) {
@@ -19,7 +19,10 @@ ShapeModel::ShapeModel(std::string pathName) {
 			file >> x >> y >> z;
 
 			this->vertices.push_back({ x * 1000, y * 1000, z * 1000 });
+
+			this->maxRadius = (maxRadius > this->vertices[j].GetLength()) ? maxRadius : vertices[j].GetLength();
 		}
+		
 
 		double volume = 0;
 
@@ -28,10 +31,10 @@ ShapeModel::ShapeModel(std::string pathName) {
 
 			file >> a >> b >> c;
 
-			this->indexes.push_back({ a, b, c });
-			
-			this->pairsVecSurfase.push_back({ (this->vertices[a] + this->vertices[b] + this->vertices[c]) / 3,
-				Vec3D::VectorProduct(this->vertices[b] - this->vertices[a], this->vertices[c] - this->vertices[a]) / 2 });
+			this->indexes.push_back({ a - 1, b - 1, c - 1 });
+
+			this->pairsVecSurfase.push_back({ (this->vertices[a - 1] + this->vertices[b - 1] + this->vertices[c - 1]) / 3,
+				Vec3D::VectorProduct(this->vertices[b - 1] - this->vertices[a - 1], this->vertices[c - 1] - this->vertices[a - 1]) / 2 });
 
 			volume += (this->pairsVecSurfase[j].first * this->pairsVecSurfase[j].second) / 2;
 		}
@@ -40,7 +43,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 	}
 
 	file.close();
-	
+
 }
 
 std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
@@ -53,7 +56,7 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 	double tauZTemp = 0.;
 	double tauEpsilonTemp = 0.;
 
-	for (const auto&[vecorToSurface, surfaceVector] : this->pairsVecSurfase) {
+	for (const auto& [vecorToSurface, surfaceVector] : this->pairsVecSurfase) {
 
 		sinpsi = surfaceVector[Vertices::Z] / sqrt(surfaceVector.GetLength() + 0.0000000001);
 		//+0 needed because some asteroids presumably have facets of 0 area
@@ -70,7 +73,7 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 		p_z = 0.;
 		p_sin = 0.;
 		//TODO: add sin cos 
-		
+
 
 		for (long int j = 1; j <= Nintegral; j++) {
 			double phi = -(PI / 2) + PI * (2. * j - 1.) / 2. / Nintegral;
