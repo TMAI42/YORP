@@ -4,12 +4,12 @@ Vec3D::Vec3D(double x, double y, double z) :X(x), Y(y), Z(z) {}
 
 Vec3D Vec3D::VectorProduct(const Vec3D& a, const Vec3D& b) {
 	return { a.Y * b.Z - a.Z * b.Y,
-		a.X * b.Z - a.Z * b.X,
+		a.Z * b.X - a.X * b.Z,
 		a.X * b.Y - a.Y * b.X };
 }
 
 double Vec3D::operator*(const Vec3D& b) const {
-	return X * X + Y * Y + Z * Z;
+	return (X * b.X + Y * b.Y + Z * b.Z);
 }
 
 Vec3D Vec3D::operator+(const Vec3D& b) {
@@ -26,7 +26,7 @@ Vec3D Vec3D::operator/(double denum) {
 
 Vec3D Vec3D::operator*(double a)
 {
-	return {a*X, a*Y, a*Z};
+	return { a * X, a * Y, a * Z };
 }
 
 const double Vec3D::operator[](Vertices vertex) const {

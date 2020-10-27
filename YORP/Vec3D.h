@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <algorithm>
 
 enum class Vertices
 {

@@ -9,7 +9,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 	}
 	else {
 
-		file >> this->numberOfVrtices;
+		file >> this->numberOfVrtices;          
 		file >> this->numberOfFacets;
 
 		for (int j = 0; j < this->numberOfVrtices; j++) {
@@ -18,7 +18,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 
 			file >> x >> y >> z;
 
-			this->vertices.push_back({ x * 1000, y * 1000, z * 1000 });
+			this->vertices.push_back({ x , y , z  });
 
 			this->maxRadius = (maxRadius > this->vertices[j].GetLength()) ? maxRadius : vertices[j].GetLength();
 		}
@@ -95,8 +95,8 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 
 	}
 
-	this->tauZ.insert({ epsilon, tauZTemp });
-	this->tauEpsilon.insert({ epsilon, tauEpsilonTemp });
+	//this->tauZ.insert({ epsilon, tauZTemp });
+	//this->tauEpsilon.insert({ epsilon, tauEpsilonTemp });
 
 	return { tauZTemp, tauEpsilonTemp };
 }
