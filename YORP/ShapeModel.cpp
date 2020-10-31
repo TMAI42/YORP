@@ -1,7 +1,7 @@
 #include "ShapeModel.h"
 
 ShapeModel::ShapeModel(std::string pathName) {
-	
+
 	std::ifstream file(pathName);
 
 	if (!file.is_open()) {
@@ -9,7 +9,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 	}
 	else {
 
-		file >> this->numberOfVrtices;          
+		file >> this->numberOfVrtices;
 		file >> this->numberOfFacets;
 
 		for (int j = 0; j < this->numberOfVrtices; j++) {
@@ -18,11 +18,11 @@ ShapeModel::ShapeModel(std::string pathName) {
 
 			file >> x >> y >> z;
 
-			this->vertices.push_back({ x , y , z  });
+			this->vertices.push_back({ x , y , z });
 
 			this->maxRadius = (maxRadius > this->vertices[j].GetLength()) ? maxRadius : vertices[j].GetLength();
 		}
-		
+
 
 		double volume = 0;
 
@@ -46,7 +46,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 
 }
 
-std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
+double ShapeModel::CalculateTaus(double epsilon) {
 
 	const int Nintegral = 100;
 	double p_z = 0;
@@ -58,10 +58,10 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 
 	for (const auto& [vecorToSurface, surfaceVector] : this->pairsVecSurfase) {
 
-		sinpsi = surfaceVector[Vertices::Z] / sqrt(surfaceVector.GetLength() + 0.0000000001);
+		sinpsi = surfaceVector[Vertices::Z] / (surfaceVector.GetLength() + 0.0000000001);
 		//+0 needed because some asteroids presumably have facets of 0 area
 		cospsi = sqrt(1 - sinpsi * sinpsi);
-		sinetha = vecorToSurface[Vertices::Z] / sqrt(vecorToSurface.GetLength());
+		sinetha = vecorToSurface[Vertices::Z] / (vecorToSurface.GetLength());
 		cosetha = sqrt(1 - sinetha * sinetha);
 		//ask for this
 		sindelta = Vec3D::VectorProduct(surfaceVector, vecorToSurface)[Vertices::Z] /
@@ -91,14 +91,15 @@ std::pair<double, double> ShapeModel::CalculateTaus(double epsilon) {
 		tauZTemp += (Vec3D::VectorProduct(surfaceVector, vecorToSurface)[Vertices::Z]) * p_z;
 
 		// YORP torque obliquity component
-		tauEpsilonTemp += -sqrt(vecorToSurface.GetLength()) * sqrt(surfaceVector.GetLength()) * sinpsi * cosetha * sindelta * p_sin;
+		//tauEpsilonTemp += -sqrt(vecorToSurface.GetLength()) * sqrt(surfaceVector.GetLength()) * sinpsi * cosetha * sindelta * p_sin;
 
 	}
 
 	//this->tauZ.insert({ epsilon, tauZTemp });
 	//this->tauEpsilon.insert({ epsilon, tauEpsilonTemp });
 
-	return { tauZTemp, tauEpsilonTemp };
+	return  tauZTemp * (3.14159265359265 * maxRadius * maxRadius) /
+		(averageRadius * averageRadius * averageRadius);
 }
 
 std::map<double, double> ShapeModel::GetCalculatedTauZ() {

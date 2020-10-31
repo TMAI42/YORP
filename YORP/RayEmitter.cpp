@@ -4,7 +4,7 @@
 /*divide circle o 4 parts becouse o semetry*/
 /*calculate corrent number of rays*/
 template<size_t numberOfRays>
-RayEmitter<numberOfRays>::RayEmitter(double radius) {
+RayEmitter<numberOfRays>::RayEmitter(double radius) :orbit(0,0,0){
 	/*TODO: PI in individual header*/
 	double delta = sqrt(3.1459265358979323846 * radius * radius / numberOfRays);
 
@@ -63,27 +63,27 @@ RayEmitter<numberOfRays>::RayEmitter(double radius, double phi, double teta, dou
 
 	for (long n = 1; n * delta <= radius; n++) {
 		rays.push_back({
-			{radius + 10 * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1],
-			radius + 10 * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1],
-			radius + 10 * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1]},
+			{(radius + 10) * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1],
+			(radius + 10) * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1],
+			(radius + 10) * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1]},
 			{-roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0]} });
 
 		rays.push_back({
-			{radius + 10 * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1],
-			radius + 10 * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1],
-			radius + 10 * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1]},
+			{(radius + 10) * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1],
+			(radius + 10) * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1],
+			(radius + 10) * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1]},
 			{-roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0]} });
 
 		rays.push_back({
-			{ radius + 10 * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][2],
-			radius + 10 * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][2],
-			radius + 10 * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][2] },
+			{ (radius + 10) * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][2],
+			(radius + 10) * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][2],
+			(radius + 10) * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][2] },
 			{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] } });
 
 		rays.push_back({
-			{radius + 10 * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][2],
-			radius + 10 * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][2],
-			radius + 10 * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][2]},
+			{(radius + 10) * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][2],
+			(radius + 10) * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][2],
+			(radius + 10) * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][2]},
 			{-roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0]} });
 
 	}
@@ -91,28 +91,33 @@ RayEmitter<numberOfRays>::RayEmitter(double radius, double phi, double teta, dou
 	for (long n = 1; n * delta <= radius; n++) {
 		for (long m = 1; (n * n + m * m) * delta * delta <= radius * radius; m++) {
 			rays.push_back({
-				{ radius + 10 * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1] + m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1] + m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1] + m * delta * roatrionMatrix[0][2] },
+				{ (radius + 10) * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1] + m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1] + m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1] + m * delta * roatrionMatrix[0][2] },
 				{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] }});
 
 			rays.push_back({
-				{ radius + 10 * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1] - m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1] - m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1] - m * delta * roatrionMatrix[0][2] },
+				{ (radius + 10) * roatrionMatrix[0][0] + n * delta * roatrionMatrix[0][1] - m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[1][0] + n * delta * roatrionMatrix[1][1] - m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[2][0] + n * delta * roatrionMatrix[2][1] - m * delta * roatrionMatrix[0][2] },
 				{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] }});
 
 			rays.push_back({
-				{ radius + 10 * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1] + m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1] + m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1] + m * delta * roatrionMatrix[0][2] },
+				{ (radius + 10) * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1] + m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1] + m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1] + m * delta * roatrionMatrix[0][2] },
 				{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] }});
 
 			rays.push_back({
-				{ radius + 10 * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1] - m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1] - m * delta * roatrionMatrix[0][2],
-				radius + 10 * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1] - m * delta * roatrionMatrix[0][2] },
+				{ (radius + 10) * roatrionMatrix[0][0] - n * delta * roatrionMatrix[0][1] - m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[1][0] - n * delta * roatrionMatrix[1][1] - m * delta * roatrionMatrix[0][2],
+				(radius + 10) * roatrionMatrix[2][0] - n * delta * roatrionMatrix[2][1] - m * delta * roatrionMatrix[0][2] },
 				{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] }});
 		}
 	}
+
+	Vec3D normalToOrbit{ roatrionMatrix[0][2], roatrionMatrix[1][2], roatrionMatrix[2][2] };
+
+	Vec3D startDir{ -roatrionMatrix[0][0], -roatrionMatrix[1][0], -roatrionMatrix[2][0] };
+	orbit = Vec3D::VectorProduct(normalToOrbit, startDir);
 }

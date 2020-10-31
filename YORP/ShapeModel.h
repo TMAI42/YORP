@@ -15,7 +15,7 @@ public:
 	ShapeModel(std::string pathName);
 	~ShapeModel() = default;
 
-	std::pair<double, double> CalculateTaus(double epsilon);
+	double CalculateTaus(double epsilon);
 
 	std::map<double, double> GetCalculatedTauZ();
 	std::map<double, double> GetCalculatedTauEpsilon();

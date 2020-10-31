@@ -3,20 +3,20 @@
 #include <limits>
 
 template<size_t numberOfRays, size_t integralSteps>
-void Tracer<numberOfRays, integralSteps>::Trace(ShapeModel& object, double epsilon) {
-	Vec3D torqe = { 0, 0, 0 };
-
+std::tuple<double, double> Tracer<numberOfRays, integralSteps>::Trace(ShapeModel& object, double epsilon) {
+	Vec3D torqe ( 0, 0, 0 );
+	double yarc=  0. ;
+	double num;
 	double angleStep = 2 * 3.14159265358979323846 / integralSteps;
 	for (int i = 0; i < integralSteps; i++) {
 		for (int j = 0; j < integralSteps; j++) {
 
 			RayEmitter<numberOfRays> emitter{ object.maxRadius, i * angleStep, j * angleStep, epsilon };
-
+			num = emitter.rays.size();
 			while (!emitter.rays.empty()) {
-				int num = emitter.rays.size();
 				for (std::list<Ray>::iterator current = emitter.rays.begin();
 					current != emitter.rays.end();) {
-					if (!Intersection(*current, object, torqe)) {
+					if (!Intersection(*current, object, torqe, yarc, emitter.orbit)) {
 						current = emitter.rays.erase(current);
 					}
 				}
@@ -24,8 +24,11 @@ void Tracer<numberOfRays, integralSteps>::Trace(ShapeModel& object, double epsil
 		}
 	}
 
-	torqe = torqe * (3.14159265359265 * object.maxRadius * object.maxRadius) / (object.averageRadius * object.averageRadius * object.averageRadius);
-	object.tauZ.insert({ epsilon, torqe[Vertices::Z] });
+	torqe = torqe * (3.14159265359265 * object.maxRadius * object.maxRadius) /
+		(object.averageRadius * object.averageRadius * object.averageRadius) / num / integralSteps / integralSteps;
+	yarc = yarc * (3.14159265359265 * object.maxRadius * object.maxRadius) /
+		(object.averageRadius * object.averageRadius) / num / integralSteps / integralSteps;
+	return { torqe[Vertices::Z], yarc };
 }
 
 template<size_t numberOfRays, size_t integralSteps>
@@ -34,7 +37,7 @@ double Tracer<numberOfRays, integralSteps>::TraceTest(ShapeModel& object) {
 	RayEmitter<numberOfRays> emitter{ object.maxRadius };
 	int num = emitter.rays.size();
 	while (!emitter.rays.empty()) {
-		
+
 		for (std::list<Ray>::iterator current = emitter.rays.begin();
 			current != emitter.rays.end();) {
 			if (!Intersection(*current, object, torqe)) {
@@ -44,11 +47,34 @@ double Tracer<numberOfRays, integralSteps>::TraceTest(ShapeModel& object) {
 	}
 	return torqe[Vertices::Z] *
 		(3.14159265359265 * object.maxRadius * object.maxRadius) /
-		(object.averageRadius * object.averageRadius * object.averageRadius)/num;
+		(object.averageRadius * object.averageRadius * object.averageRadius) / num;
 }
 
 template<size_t numberOfRays, size_t integralSteps>
-inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, ShapeModel& object, Vec3D& torqe) {
+double Tracer<numberOfRays, integralSteps>::TracerTestWithTestEmitter(ShapeModel& object)
+{
+	Vec3D torqe = { 0, 0, 0 };
+
+	TestEmitter<numberOfRays> emitter{ object.maxRadius };
+
+	while (!emitter.rays.empty()) {
+		int num = emitter.rays.size();
+		for (std::list<Ray>::iterator current = emitter.rays.begin();
+			current != emitter.rays.end();) {
+			if (!Intersection(*current, object, torqe)) {
+				current = emitter.rays.erase(current);
+			}
+		}
+	}
+
+
+	torqe = torqe * (3.14159265359265 * object.maxRadius * object.maxRadius) / (object.averageRadius * object.averageRadius * object.averageRadius);
+	return torqe[Vertices::Z];
+}
+
+template<size_t numberOfRays, size_t integralSteps>
+inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, ShapeModel& object, Vec3D& torqe,
+	double& yarc, const Vec3D& orbit) {
 
 	double u{ 0 }, v{ 0 }, t{ DBL_MAX }, tempT{ 0 };
 	bool intersectionFlag{ false };
@@ -57,7 +83,7 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 	Vec3D normilizedVecInSurf{ 0,0,0 };
 
 	for (int i = 0; i < object.numberOfFacets; ++i) {
-		if (object.pairsVecSurfase[i].second * current.direction > 0)
+		if (object.pairsVecSurfase[i].second * current.direction >= 0)
 			continue;
 
 		Vec3D firstVectorOfSurf = object.vertices[std::get<1>(object.indexes[i])] - object.vertices[std::get<0>(object.indexes[i])];
@@ -69,7 +95,7 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 		double det = firstVectorOfSurf * pVector;
 
 		tempT = secondVectorOfSurf * qVector / det;
-		if (tempT < 0.0 || t < tempT) continue;
+		if (tempT <= 0.0 || t < tempT) continue;
 
 
 		u = pVector * tVector / det;
@@ -79,6 +105,7 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 		if (v < 0.0 || u + v > 1)
 			continue;
 
+		if (tempT > t) continue;
 		t = tempT;
 		intersectionFlag = true;
 		intersectionPoint = object.vertices[std::get<0>(object.indexes[i])] * (1 - u - v) +
@@ -87,9 +114,10 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 
 		normilizedInetrsectSurf = object.pairsVecSurfase[i].second / object.pairsVecSurfase[i].second.GetLength();
 		normilizedVecInSurf = firstVectorOfSurf / firstVectorOfSurf.GetLength();
+		if (!intersectionFlag) t = DBL_MAX;
 	}
 	if (intersectionFlag) {
-		ReflectLambert(intersectionPoint, current, torqe, normilizedInetrsectSurf, normilizedVecInSurf);
+		ReflectLambert(intersectionPoint, current, torqe, normilizedInetrsectSurf, normilizedVecInSurf, yarc, orbit);
 		return true;
 	}
 
@@ -98,25 +126,26 @@ inline bool Tracer<numberOfRays, integralSteps>::Intersection(Ray& current, Shap
 
 template<size_t numberOfRays, size_t integralSteps>
 inline void Tracer<numberOfRays, integralSteps>::ReflectLambert(const Vec3D& intersectionPoint, Ray& reflectingRay, Vec3D& torqe,
-	const Vec3D& surfaceNormal, const Vec3D& vectorInSurf) {
+	const Vec3D& surfaceNormal, const Vec3D& vectorInSurf, double& yarc, const Vec3D& orbit) {
 
 	const double PI = 3.14159265358979232846;
 
-	Vec3D momentum = reflectingRay.direction * (-1);
+	Vec3D momentum = reflectingRay.direction;
 
 	reflectingRay.startPoint = intersectionPoint;
 
 	std::srand(time(nullptr));
-	double randomVariable1 = std::rand() % 100 / 100.;
-	double randomVariable2 = std::rand() % 100 / 100.;
+	double randomVariable1 = std::rand() % 10000 / 10000.;
+	double randomVariable2 = (std::rand() % 10000 + 0.5) / 10000.;
+
 
 	/*
 	Diatribution for angles in Lambert`s reflection
 	For phi is 2PI multiplied by random value in interval [0;1]
 	For teta, because of irregularity caused by surface os sphere is 1/2 * arccos(1 - 2 * p), where p is random value in interval [0;1]
 	*/
-	double phi = 2 * PI * randomVariable1;
-	double teta = acos(1 - 2 * randomVariable2) / 2.;
+	double phi = 2. * PI * randomVariable1;
+	double teta = acos(1. - 2. * randomVariable2) / 2.;
 
 	/*
 	Create normilized refleted vector with shpere cordenates
@@ -128,9 +157,9 @@ inline void Tracer<numberOfRays, integralSteps>::ReflectLambert(const Vec3D& int
 
 	/*
 	Transform random vector with rotatin matrix represented by transformation of (XYZ) to (X`Y`Z`)
-	X` - normilize vector in reflectin surface
-	Y` - vector product of normilized vector of reflection surface and normilize vector in reflectin surface
-	Z` - normilized vector of reflection surface
+	eX` - normilize vector in reflectin surface
+	eY` - vector product of normilized vector of reflection surface and normilize vector in reflectin surface
+	eZ` - normilized vector of reflection surface
 	*/
 	Vec3D newEY = Vec3D::VectorProduct(surfaceNormal, vectorInSurf);
 	double transformaionMatrix[3][3] =
@@ -144,7 +173,9 @@ inline void Tracer<numberOfRays, integralSteps>::ReflectLambert(const Vec3D& int
 		transformaionMatrix[2][0] * nonRotetedX + transformaionMatrix[2][1] * nonRotetedY + transformaionMatrix[2][2] * nonRotetedZ
 	};
 
-	momentum = momentum + reflectingRay.direction;
+	momentum = momentum - reflectingRay.direction;
+
+	yarc += orbit * momentum;
 
 	torqe = torqe + Vec3D::VectorProduct(intersectionPoint, momentum);
 }

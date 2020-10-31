@@ -13,5 +13,6 @@ public:
 	~RayEmitter() = default;
 
 	std::list<Ray> rays;
+	Vec3D orbit;
 };
 

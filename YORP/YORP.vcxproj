@@ -146,6 +146,7 @@
     <ClCompile Include="RayEmitter.cpp" />
     <ClCompile Include="ShapeModel.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="TestEmitter.cpp" />
     <ClCompile Include="Tracer.cpp" />
     <ClCompile Include="Vec3D.cpp" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayEmitter.h" />
     <ClInclude Include="ShapeModel.h" />
+    <ClInclude Include="TestEmitter.h" />
     <ClInclude Include="Tracer.h" />
     <ClInclude Include="Vec3D.h" />
   </ItemGroup>
