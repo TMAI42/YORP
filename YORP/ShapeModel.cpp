@@ -36,7 +36,7 @@ ShapeModel::ShapeModel(std::string pathName) {
 			this->pairsVecSurfase.push_back({ (this->vertices[a - 1] + this->vertices[b - 1] + this->vertices[c - 1]) / 3,
 				Vec3D::VectorProduct(this->vertices[b - 1] - this->vertices[a - 1], this->vertices[c - 1] - this->vertices[a - 1]) / 2 });
 
-			volume += (this->pairsVecSurfase[j].first * this->pairsVecSurfase[j].second) / 2;
+			volume += (this->pairsVecSurfase[j].first * this->pairsVecSurfase[j].second) / 3;
 		}
 
 		this->averageRadius = pow(3. * volume / 4. / PI, 1. / 3.);
